@@ -103,7 +103,7 @@ object Producing {
           record,
           (metadata: RecordMetadata, exception: Exception) =>
             Option(exception) match {
-              case Some(e) => cb(Left(e))
+              case Some(e) => cb(Left(KafkaProduceError(record, e)))
               case None    => cb(Right(metadata))
           }
         )
@@ -129,8 +129,9 @@ object Producing {
               record,
               (metadata: RecordMetadata, exception: Exception) =>
                 Option(exception) match {
-                  case Some(e) => promise.complete(Failure(e)); ()
-                  case None    => promise.complete(Success((metadata, p))); ()
+                  case Some(e) =>
+                    promise.complete(Failure(KafkaProduceError(record, e))); ()
+                  case None => promise.complete(Success((metadata, p))); ()
               }
             )
 
