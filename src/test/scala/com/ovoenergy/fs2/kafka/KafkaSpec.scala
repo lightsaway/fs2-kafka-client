@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.{
   KafkaConsumer
 }
 import org.apache.kafka.clients.producer.{
+  MockProducer,
   ProducerConfig,
   ProducerRecord,
   RecordMetadata
@@ -371,13 +372,13 @@ class KafkaSpec extends BaseUnitSpec with EmbeddedKafka {
 
       val kafkaStream = fs2.Stream.eval(produceRecord[IO](producer, record))
 
-      val exception = the[KafkaProduceError[String, String]] thrownBy kafkaStream
+      val exception = the[KafkaProduceException[String, String]] thrownBy kafkaStream
         .concurrently(errorEmiter)
         .compile
         .toList
         .unsafeRunSync()
       exception.record shouldBe record
-      exception.error shouldBe error
+      exception.cause shouldBe error
 
     }
 
